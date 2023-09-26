@@ -1,7 +1,7 @@
 #!/usr/bin/env python3 
 #
-import logging
-from aiogram.utils import executor
+import logging, asyncio, time, sys
+from typing import Coroutine
 from argparse import ArgumentParser
 from sqlalchemy.engine.result import Row
 #
@@ -24,6 +24,7 @@ class Telega:
         Telega.countInstance += 1
         self.countInstance = Telega.countInstance
         self.bot=bot
+        self.dp=dp
         self.log_file=log_file
         self.log_level=log_level
         self.folder_swords = folder_swords
@@ -44,12 +45,16 @@ class Telega:
     def _print(self):
         print(f'\n[Telega] countInstance: [{self.countInstance}]')
         self.Logger.log_info(f'\n[Telega] countInstance: [{self.countInstance}]\n')
-        print(f'Аргументы:\n'
+        msg = (f"Started at {time.strftime('%X')}\n"
+              f'platform: [{sys.platform}]\n'
+              f'\nАргументы:\n'
               f'log_file: {self.log_file}\n'
               f'log_level: {self.log_level}\n'
               f'folder_swords: {self.folder_swords}\n'
               f'pattern_name_swords: {self.pattern_name_swords}\n'
               )
+        print(msg)
+        self.Logger.log_info(msg)
 #
     # добавление аргументов строки
     def _arg_added(self, parser: ArgumentParser):
@@ -74,12 +79,15 @@ class Telega:
 #
     # обертка для безопасного выполнения методов
     # async def safe_execute(self, coroutine: Callable[..., Coroutine[Any, Any, T]]) -> T:
-    async def safe_await_execute(self, coroutine, name_func: str = None):
+    async def safe_await_execute(self, coroutine: Coroutine, name_func: str = None):
+        if not coroutine:
+            print(f'\n[Telega safe_await_execute] coroutine is {coroutine}')
+            return None
         try:
             return await coroutine
         except Exception as eR:
-            print(f'\nERROR[Handlers4bot {name_func}] ERROR: {eR}') 
-            self.Logger.log_info(f'\nERROR[Handlers4bot {name_func}] ERROR: {eR}') 
+            print(f'\nERROR[Telega {name_func}] ERROR: {eR}') 
+            self.Logger.log_info(f'\nERROR[Telega {name_func}] ERROR: {eR}') 
             return None
 
     ### запускаем клиент бот-телеграм
@@ -97,17 +105,24 @@ class Telega:
         return message  
 
 # MAIN **************************
-async def main(_):
+async def main():
     print(f'\n**************************************************************************')
     print(f'\nБот вышел в онлайн')
     # создаем объект и в нем регистрируем хэндлеры Клиента
     telega=Telega()  
     telega.Logger.log_info(f'\n[main] Создали объект {telega}')
     print(f'\n[main] Создали объект {telega}')
+    # регистрируем обработчики
     await telega.client_work()
+    drop_pending_updates = await telega.bot.delete_webhook(drop_pending_updates=True)
+    print(f'\n[telega main] сбросили ожидающие обновления: [{drop_pending_updates}]')
+    # обработчики
+    await telega.dp.start_polling(telega.bot)
+    print(f'\n[telega main] закончили start_polling...')
     #
 #
 if __name__ == "__main__":
-    executor.start_polling(dp, skip_updates=True, on_startup=main)
+    asyncio.run(main())
+    # executor.start_polling(dp, skip_updates=True, on_startup=main)
 
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 #
-import os, sys, psutil, pynvml, logging, asyncio
+import os, sys, psutil, pynvml, logging, asyncio, time
+from typing import Coroutine
 from bot_env.mod_log import Logger
 from argparse import ArgumentParser
 
@@ -13,7 +14,6 @@ class Start:
                  pattern_name_swords='swords_',
                  log_file='log.md', 
                  log_level=logging.DEBUG,
-                 max_download=3,
                  ):
         Start.countInstance += 1
         self.countInstance = Start.countInstance
@@ -22,7 +22,6 @@ class Start:
         self.log_level=log_level
         self.folder_swords = folder_swords
         self.pattern_name_swords = pattern_name_swords
-        self.max_download = max_download
         # Разбор аргументов командной строки
         self._arg_parser()
         # Logger
@@ -34,13 +33,16 @@ class Start:
     def _print(self):
         print(f'\n[Start] countInstance: [{self.countInstance}]')
         self.Logger.log_info(f'\n[Start] countInstance: [{self.countInstance}]\n')
-        print(f'Аргументы:\n'
+        msg = (f"Started at {time.strftime('%X')}\n"
+              f'platform: [{sys.platform}]\n'
+              f'\nАргументы:\n'
               f'log_file: {self.log_file}\n'
               f'log_level: {self.log_level}\n'
               f'folder_swords: {self.folder_swords}\n'
               f'pattern_name_swords: {self.pattern_name_swords}\n'
-              f'max_download: {self.max_download}\n'
               )
+        print(msg)
+        self.Logger.log_info(msg)
     # 
     # добавление аргументов командной строки
     def _arg_added(self, parser: ArgumentParser):
@@ -80,11 +82,36 @@ class Start:
         # Освобождаем ресурсы NVML
         pynvml.nvmlShutdown()
 
+    # обертка для безопасного выполнения методов
+    # async def safe_execute(self, coroutine: Callable[..., Coroutine[Any, Any, T]]) -> T:
+    async def safe_await_execute(self, coroutine: Coroutine, name_func: str = None):
+        if not coroutine:
+            print(f'\n[Start safe_await_execute] coroutine is {coroutine}')
+            return None
+        try:
+            return await coroutine
+        except Exception as eR:
+            print(f'\nERROR[Start {name_func}] ERROR: {eR}') 
+            self.Logger.log_info(f'\nERROR[Start {name_func}] ERROR: {eR}') 
+            return None
+
     # Асинхронная функция для запуска скрипта
-    async def run_script(self, script):
-        self.Logger.log_info(f'[run_script] command: {script}')
-        # Используем asyncio для асинхронного запуска скрипта
-        process = await asyncio.create_subprocess_shell(script)
+    async def making_subprocess_script(self, script):
+        self.Logger.log_info(f'[Start making_subprocess_script] start script: {script}')
+        print(f'\n[Start making_subprocess_script] start script: {script}')
+        # Example:
+        # await asyncio.create_subprocess_shell("ls -l > output.txt")
+        # await asyncio.create_subprocess_exec("ls", "-l")
+        try:
+            # Используем asyncio для асинхронного запуска скрипта
+            process = await self.safe_await_execute(asyncio.create_subprocess_shell(script), 'run_script')
+            if not process:
+                print(f'\n[Start making_subprocess_script] нет процесса!!! process: {process}')
+                return None 
+        except Exception as eR:
+            print(f'\nERROR[Start making_subprocess_script] ERROR: {eR}') 
+            self.Logger.log_info(f'\nERROR[Start making_subprocess_script] ERROR: {eR}') 
+            return None
         await process.wait()
 
 
@@ -93,16 +120,23 @@ class Start:
 async def main():
     print(f'\nСтарт приложения...\n') 
     # print(f'\n==============================================================================\n')
-    print(f'File: [{os.path.basename(sys.argv[0])}]')
-    print(f'Path: [{sys.path[0]}]') 
-    print(f'Data memory: [{psutil.virtual_memory()}]')
+    file_start = os.path.basename(sys.argv[0])
+    path_start = sys.path[0]
+    print(f'File: [{file_start}]')
+    print(f'Path: [{path_start}]') 
+    # print(f'Data memory: [{psutil.virtual_memory()}]')
+    # Вывод значений с названиями
+    print(f'Data memory:')
+    memory = psutil.virtual_memory()
+    for field in memory._fields:
+        print(f"{field}: {getattr(memory, field)}")    
+    
     # Создаем экземпляр класса Start
     start = Start()
     start.log_memory()
     #
     # Список скриптов для запуска
-    args_bot_telega=''
-    # args_bot_hasher=''    
+    args_bot_telega=' '
     
     if start.folder_swords: 
         args_bot_telega+=f'--folder_swords {start.folder_swords} '
@@ -118,13 +152,23 @@ async def main():
         log_level_arg=f'--log_level {start.log_level} '
         args_bot_telega+=log_level_arg
 
+    full_path_telega = os.path.join(sys.path[0], 'bot_telega.py')
+    if not os.path.isfile(full_path_telega):
+        print(f'\nERROR [Start main] Нет файла: {full_path_telega}')
+        return None
+    
+    script_telega_args = 'python ' + full_path_telega + args_bot_telega
+    print(f'\n[Start main] script_telega: {script_telega_args}')
+    
     scripts = [
-        os.path.join(sys.path[0], f'bot_telega.py {args_bot_telega}'),
+        script_telega_args,
                 ]
+    print(f'\n[Start main] scripts: {scripts}')
     #
     # Запускаем скрипты асинхронно
-    tasks = [start.run_script(script) for script in scripts]
-    await asyncio.gather(*tasks)
+    
+    tasks = [start.making_subprocess_script(script) for script in scripts]
+    await start.safe_await_execute(asyncio.gather(*tasks), 'gather')
 
 # Запускаем главную асинхронную функцию
 if __name__ == "__main__":

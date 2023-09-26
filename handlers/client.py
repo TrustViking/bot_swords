@@ -1,14 +1,15 @@
 
 import os, sys
 from io import BytesIO
+import chardet
 from langdetect import detect
 from langdetect.lang_detect_exception import LangDetectException
-from aiogram import types
-from aiogram.types.message import ContentType
-from aiogram.types import InputFile
-from aiogram.dispatcher.filters import Command
+from aiogram import F
+from aiogram.types.message import ContentType, Message
+from aiogram.types import BufferedInputFile
+from aiogram.filters import Command
 from bot_env.mod_log import Logger
-from bot_env.create_obj4bot import bot, dp, token
+from bot_env.create_obj4bot import bot, dp
 
 class Handlers4bot:
     """
@@ -32,7 +33,7 @@ class Handlers4bot:
         self.pattern_name_swords=pattern_name_swords
         self.bot=bot
         self.dp=dp
-        self.token=token
+        # self.token=token
         # ℃ ∈ ☪
         self.replace_dict={'a': '@', 'e':'€', 'i':'!', 'o':'0', 's':'$', 'u':'*',
                            'а': '@', 'е':'€', 'и':'N', 'й':'N', 'о':'0', 'р':'₽', 'с':'©', 'я':'Ⓡ', 'т':'✝'}
@@ -70,6 +71,24 @@ class Handlers4bot:
             self.Logger.log_info(f'\nERROR[VidCompar {name_func}] ERROR: {eR}') 
             return None
 
+    # определяем кодировку файла
+    def detect_file_encoding(self, file_path: str, name_func: str = None):
+        try:
+            with open(file_path, 'rb') as f:
+                result = chardet.detect(f.read())
+        except Exception as eR:
+            print(f'\nERROR[Handlers4bot detect_file_encoding] ERROR: {eR}') 
+            self.Logger.log_info(f'\nERROR[Handlers4bot detect_file_encoding] ERROR: {eR}') 
+            return None
+        # print(f'[Handlers4bot detect_file_encoding {name_func}] result: [{result}]')
+        return result['encoding']
+    
+    # определяем кодировку буффера 
+    def detect_buffer_encoding(self, buffer: BytesIO):
+        result = self.safe_execute(chardet.detect(buffer.read()), 'detect_buffer_encoding')
+        # print(f'[Handlers4bot detect_buffer_encoding] result: [{result}]')
+        return result['encoding']
+
     def filtering_swords(self, file_path: str):
         """
         Загружает файл стоп-слов, убирает повторы и сортирует его
@@ -82,34 +101,52 @@ class Handlers4bot:
             print(f'\nERROR [filtering_swords] Проверьте полный путь к файлу стоп-слов: {file_path}')
             return None
         
+        # оперделяем кодировку файла стоп-слов
+        encoding = self.detect_file_encoding(file_path, 'filtering_swords')
+        print(f'\n[filtering_swords] кодировка [{encoding}] файла {file_path}')
+        if not encoding:
+            msg = f'\n[Handlers4bot filtering_swords] Не определили кодировку после фильтрации файла стоп-слов: {file_path}'
+            print(msg)
+            return None
+        
         try:
             # Чтение файла в память
-            with open(file_path, 'r') as f:
+            with open(file_path, 'r', encoding=encoding) as f:
                 stop_words = f.read().splitlines()
+        except Exception as eR:
+            print(f'\nERROR[Handlers4bot filtering_swords read stop-words] ERROR: {eR}') 
+            self.Logger.log_info(f'\nERROR[Handlers4bot filtering_swords read stop-words] ERROR: {eR}') 
+            return None
 
-            # Добавление вариантов слов с большой и маленькой буквы
-            case_sensitive_words = set()
-            for word in set(filter(lambda x: x.strip(), stop_words)):
-                case_sensitive_words.add(word.lower())
-                case_sensitive_words.add(word.capitalize())            
+        # Добавление вариантов слов с большой и маленькой буквы
+        case_sensitive_words = set()
+        for word in set(filter(lambda x: x.strip(), stop_words)):
+            case_sensitive_words.add(word.lower())
+            case_sensitive_words.add(word.capitalize())            
 
-            # Сортировка
-            swords = sorted(case_sensitive_words)
-
+        # Сортировка
+        swords = sorted(case_sensitive_words)
+        try:
             # запись файла в память
             with open(file_path, 'w') as f:
                 for word in swords:
                     f.write(f"{word}\n")
         except Exception as eR:
-            print(f'\nERROR[Handlers4bot filtering_swords] ERROR: {eR}') 
-            self.Logger.log_info(f'\nERROR[Handlers4bot filtering_swords] ERROR: {eR}') 
+            print(f'\nERROR[Handlers4bot filtering_swords write stop-words] ERROR: {eR}') 
+            self.Logger.log_info(f'\nERROR[Handlers4bot filtering_swords write stop-words] ERROR: {eR}') 
             return None
         return file_path
-
+    
     # определяем язык текста
     # возвращаем строку 'en', 'ru' or None
     def detection_lang(self, buf: BytesIO):
-        text = [line.decode('utf-8') for line in buf.readlines()]
+        buf.seek(0)
+        # определяем кодировку буффера 
+        encoding=self.detect_buffer_encoding(buf)
+        print(f'\n[Handlers4bot detection_lang] Буфер в кодировке: {encoding}')
+
+        buf.seek(0)
+        text = [line.decode(encoding=encoding) for line in buf.readlines()]
         try:
             return detect(' '.join(text))
         except LangDetectException as eR:
@@ -129,37 +166,55 @@ class Handlers4bot:
         :param replace_dict: словарь для замены символов
         :return: словарь, где ключ - исходное слово, значение - измененное слово
         """
-        
         word_dict = {}
 
         if not os.path.exists(file_path) or not os.path.isfile(file_path):
-            print(f'\nERROR [load_words_from_file] Проверьте полный путь к файлу стоп-слов')
+            print(f'\nERROR [diction_swords] Проверьте полный путь к файлу стоп-слов')
             return None
-
-        with open(file_path, 'r', encoding='utf-8') as f:
-            for line in f:
-                # Убираем пробелы и переносы строк с обоих концов строки
-                word = line.strip()
-                
-                # Производим замену символов
-                replaced_word = "".join([replace_dict.get(char, char) for char in word])
-                
-                # Сохраняем в словаре
-                word_dict[word] = replaced_word
-                
+        encoding = self.detect_file_encoding(file_path, 'diction_swords')
+        print(f'\n[diction_swords] кодировка [{encoding}] файла {file_path}')
+        try:
+            
+            with open(file_path, 'r', encoding=encoding) as f:
+                for line in f:
+                    # Убираем пробелы и переносы строк с обоих концов строки
+                    word = line.strip()
+                    
+                    # Производим замену символов
+                    replaced_word = "".join([replace_dict.get(char, char) for char in word])
+                    
+                    # Сохраняем в словаре
+                    word_dict[word] = replaced_word
+        
+        except Exception as eR:
+            print(f'\nERROR[Handlers4bot diction_swords] ERROR: {eR}') 
+            self.Logger.log_info(f'\nERROR[Handlers4bot diction_swords] ERROR: {eR}') 
+            return None
         return word_dict
 
     # обрабатывает команду пользователя - /start
-    async def command_start(self, message: types.Message): 
+    async def command_start(self, message: Message): 
         # await Form.first_video.set()
         msg = (f'Пришлите сюда файл с титрами на:\n'
-               f'\n- английском языке или русском языке. \n'
+               f'- английском языке или русском языке. \n'
                f'\nДругие языки пока не поддерживаются \n')
         await self.bot.send_message(message.from_user.id, msg)  
     
     # обработчик любого сообщения, кроме  - /start
-    async def any2start(self, message: types.Message):
-        await self.bot.send_message(message.from_user.id, text=f'Прислали: {message.content_type}\n')
+    # from_user: id=618894555 is_bot=False first_name='AAAAAAAA' last_name=None 
+    # username='AAAA' language_code='ru' is_premium=None 
+    # added_to_attachment_menu=None can_join_groups=None 
+    # can_read_all_group_messages=None supports_inline_queries=None    
+    async def any2start(self, message: Message):
+        _msg=(f'Прислали: {message.content_type}\n'
+              f'from_user.id: {message.from_user.id}\n'
+            #   f'text: {message.text}\n'
+            #   f'\nfrom_user: {message.from_user}\n'
+            #   f'\nsender_chat: {message.sender_chat}\n'
+            #   f'\nchat: {message.chat}\n'
+            #   f'\nmedia_group_id: {message.media_group_id}\n'
+              )
+        await self.bot.send_message(message.from_user.id, text=_msg)
         msg = (f'Наберите команду [/start] для начала')
         await self.bot.send_message(message.from_user.id, msg)
 
@@ -167,9 +222,9 @@ class Handlers4bot:
     def replace_swords (self, buf: BytesIO, diction: dict):
         # Создаем новый буфер для записи обработанного текста
         new_buf = BytesIO()
-        new_buf.seek(0)
-        buf.seek(0)
+        # new_buf.seek(0)
         # Обрабатываем исходный буфер построчно
+        buf.seek(0)
         for line in buf.readlines():
             # Декодируем строку из байтов в строку Unicode
             decoded_line = line.decode('utf-8')
@@ -186,11 +241,12 @@ class Handlers4bot:
         return new_buf
 
     # отправляем буфер-документ
-    async def send_srt_file(self, chat_id: str, buffer: BytesIO):
+    async def send_srt_file(self, chat_id: str, buffer: BytesIO, nfile: str):
         # Переход к началу буфера
         buffer.seek(0)
+        
         message_file = await self.safe_await_execute(
-                        self.bot.send_document(chat_id, InputFile(buffer, filename='title.srt'), caption='Файл титров без стоп-слов'),'send_srt_file')
+                        self.bot.send_document(chat_id, BufferedInputFile(buffer.read(), filename=nfile), caption='Файл титров без стоп-слов'),'send_srt_file')
         return message_file
 
     # отправляем сообщение
@@ -201,22 +257,13 @@ class Handlers4bot:
         return message       
 
     ## обработчик файла титров
-    async def process_title(self, message: types.Message):
+    async def process_title(self, message: Message):
         self._new_handlers('process_title')
         #
-        doc = message.document if message else None
-        if not doc:
-            msg = (f'\n[Handlers4bot process_title] Документ не получил. \n'
-                   f'Отправьте документ еще раз.')
-            print(msg)
-            await self.bot.send_message(message.from_user.id, msg)            
-            return None
-        file_doc = await self.bot.get_file(doc.file_id)
-        #
         doc_file_id=str(message.document.file_id)
-        doc_file_size=str(message.document.file_size)
-        number = int(doc_file_size)
-        file_size_format = f"{number:,}".replace(",", " ")
+        number = message.document.file_size
+        if number: 
+            file_size_format = f"{number:,}".replace(",", " ")
         mime = str(message.document.mime_type).split('/')[1]
         print(f'\n[Handlers4bot process_title] \nfile_id: {doc_file_id} \nmime: {mime}')
         #
@@ -226,9 +273,17 @@ class Handlers4bot:
                f'Начинаю обрабатывать файл...'
                )
         await self.bot.send_message(message.from_user.id, msg)
+        #
+        doc = message.document if message else None
+        if not doc:
+            msg = (f'\n[Handlers4bot process_title] Документ не получил. \n'
+                   f'Отправьте документ еще раз.')
+            print(msg)
+            await self.bot.send_message(message.from_user.id, msg)            
+            return None
         
         # Загрузить документ в буфер
-        buf = await self.safe_await_execute(file_doc.download(destination_file=BytesIO(), timeout=120), 'process_title file_doc.download')   
+        buf = await self.safe_await_execute(self.bot.download(file=doc_file_id, destination=BytesIO(), timeout=120), 'process_title file_doc.download')   
         if not buf:
             print(f"\n[Handlers4bot process_title] document don't saved in buf. BUF: {buf}")
             self.Logger.log_info(f"\n[Handlers4bot process_title] document don't saved in buf. BUF: {buf}")
@@ -237,16 +292,32 @@ class Handlers4bot:
         # начало буфера
         buf.seek(0)
         language = self.detection_lang(buf)
-        print(f'language: {language}')
+        print(f'\n[Handlers4bot process_title] language: {language}')
         if not language:
             msg = f'\n[Handlers4bot process_title] Не определили язык титров language: {language}'
             print(msg)
             await self.send_msg(message.from_user.id, msg)
             return None
+
+        # файл стоп-слов, убираем повторы, сортируем и перезаписываем
+        full_path_swords = self.safe_execute(self.filtering_swords(self.path_swords+language.upper()+'.txt'), 'process_title filtering_swords')
+        if not full_path_swords:
+            msg = f'\n[Handlers4bot process_title] Не отфильтровали файл стоп-слов full_path_swords: {full_path_swords}'
+            print(msg)
+            await self.send_msg(message.from_user.id, msg)
+            return None
         
-        # создаем словарь стоп_слов и их замены
-        swords = self.safe_execute(self.diction_swords(self.filtering_swords(self.path_swords+language.upper()+'.txt'), self.replace_dict), 'process_title load_words_from_file')
-        print(f'swords: {swords}')
+        # оперделяем кодировку файла стоп-слов
+        encoding = self.detect_file_encoding(full_path_swords, 'diction_swords')
+        if not encoding:
+            msg = f'\n[Handlers4bot process_title] Не определили кодировку после фильтрации файла стоп-слов: {full_path_swords}'
+            print(msg)
+            await self.send_msg(message.from_user.id, msg)
+            return None
+        
+        # создаем словарь стоп-слов и их замен
+        swords = self.safe_execute(self.diction_swords(full_path_swords, self.replace_dict), 'process_title diction_swords')
+        # print(f'swords: {swords}') 
         if not swords:
             msg = (f'\n[Handlers4bot process_title] Не создали словарь стоп-слов {swords} \n'
                   f'на языке {language}') 
@@ -266,11 +337,12 @@ class Handlers4bot:
             return None
         
         # отправляем буфер-документ
-        msg = await self.safe_await_execute(self.send_srt_file(message.from_user.id, new_buf), 'process_title send_srt_file')
+        nfile='swords_title.srt' # имя файла новых титров
+        msg = await self.safe_await_execute(self.send_srt_file(message.from_user.id, new_buf, nfile), 'process_title send_srt_file')
         if msg: 
-            print(f'\n[Handlers4bot process_title] Новый файл с титрами отправлен')
+            print(f'\n[Handlers4bot process_title] Новый файл с титрами без стоп-слов отправлен')
         else: 
-            msg = f'\n[Handlers4bot process_title] Новый файл с титрами не отправлен'
+            msg = f'\n[Handlers4bot process_title] Новый файл с титрами без стоп-слов НЕ ОТПРАВИЛИ'
             print(msg)
             await self.send_msg(message.from_user.id, msg)
             return None
@@ -278,14 +350,14 @@ class Handlers4bot:
     ### регистрация хэндлеров
     async def register_handlers_client(self):
         # обрабатываем нажатие кнопки СТАРТ 
-        self.dp.register_message_handler(self.command_start, Command('start'))
-
+        # self.dp.register_message_handler(self.command_start, Command('start'))
+        self.dp.message.register(self.command_start, Command('start'))
         # обрабатываем первое видео 
-        self.dp.register_message_handler(self.process_title, content_types=ContentType.DOCUMENT)
-        
+        # self.dp.callback_query.register(self.process_title, content_types=ContentType.DOCUMENT)
+        self.dp.message.register(self.process_title, F.document)
         # любые сообщения и на старт
-        self.dp.register_message_handler(self.any2start, content_types=ContentType.ANY, state='*')
-
+        # self.dp.register_message_handler(self.any2start, content_types=ContentType.ANY, state='*')
+        self.dp.message.register(self.any2start)
 
 
 

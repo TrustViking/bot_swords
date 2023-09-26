@@ -1,7 +1,8 @@
 import os
-from aiogram import Bot
-from aiogram.dispatcher import Dispatcher
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram import Bot, Dispatcher
+# from aiogram.dispatcher.dispatcher import Dispatcher
+
+from aiogram.fsm.storage.memory import MemoryStorage
 
 """
 Создаем для telegram-bot объекты:
@@ -15,10 +16,10 @@ Bot, Dispatcher
 # хранилище состояний пользователей Finite State Machine (FSM)
 # может потребоваться настроить более надежное и постоянное хранилище, 
 # такое как RedisStorage или MongoDBStorage.
-storage_mem = MemoryStorage() 
-token=os.getenv('TELEGRAM_TOKEN_swords')
-bot=Bot(token, timeout=120)
-dp=Dispatcher(bot, storage=storage_mem)
+# storage_mem = MemoryStorage() 
+token=os.getenv('TELEGRAM_TOKEN_SWORDS')
+bot=Bot(token)
+dp=Dispatcher(storage=MemoryStorage())
 
 
 
