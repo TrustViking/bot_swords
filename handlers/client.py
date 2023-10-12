@@ -5,7 +5,7 @@ import chardet
 from langdetect import detect
 from langdetect.lang_detect_exception import LangDetectException
 from aiogram import F
-from aiogram.types.message import ContentType, Message
+from aiogram.types.message import Message
 from aiogram.types import BufferedInputFile
 from aiogram.filters import Command
 from bot_env.mod_log import Logger
@@ -35,7 +35,7 @@ class Handlers4bot:
         self.dp=dp
         # self.token=token
         # ℃ ∈ ☪
-        self.replace_dict={'a': '@', 'e':'€', 'i':'!', 'o':'0', 's':'$', 'u':'*',
+        self.replace_dict={'a': '@', 'e':'€', 'i':'!', 'o':'0', 's':'$', 'u':'и',
                            'а': '@', 'е':'€', 'и':'N', 'й':'N', 'о':'0', 'р':'₽', 'с':'©', 'я':'Ⓡ', 'т':'✝'}
         self.path_swords = os.path.join(sys.path[0], folder_swords, pattern_name_swords)
         self.Logger = logger
@@ -101,7 +101,7 @@ class Handlers4bot:
             print(f'\nERROR [filtering_swords] Проверьте полный путь к файлу стоп-слов: {file_path}')
             return None
         
-        # оперделяем кодировку файла стоп-слов
+        # определяем кодировку файла стоп-слов
         encoding = self.detect_file_encoding(file_path, 'filtering_swords')
         print(f'\n[filtering_swords] кодировка [{encoding}] файла {file_path}')
         if not encoding:
@@ -118,16 +118,22 @@ class Handlers4bot:
             self.Logger.log_info(f'\nERROR[Handlers4bot filtering_swords read stop-words] ERROR: {eR}') 
             return None
 
-        # Добавление вариантов слов с большой и маленькой буквы
+        # Добавление вариантов слов с большой и маленькой буквы,
+        # а также как есть (особенно для названий: YouTube...)
         case_sensitive_words = set()
         for word in set(filter(lambda x: x.strip(), stop_words)):
+             # Проверка, состоит ли "слово" из нескольких слов
+            if ' ' in word:
+                continue  # Пропустить, если "слово" на самом деле фраза
+            case_sensitive_words.add(word)
             case_sensitive_words.add(word.lower())
             case_sensitive_words.add(word.capitalize())            
 
-        # Сортировка
+        # Сортировка swords
         swords = sorted(case_sensitive_words)
+        #
         try:
-            # запись файла в память
+            # запись файла на диск
             with open(file_path, 'w') as f:
                 for word in swords:
                     f.write(f"{word}\n")
@@ -135,6 +141,7 @@ class Handlers4bot:
             print(f'\nERROR[Handlers4bot filtering_swords write stop-words] ERROR: {eR}') 
             self.Logger.log_info(f'\nERROR[Handlers4bot filtering_swords write stop-words] ERROR: {eR}') 
             return None
+        
         return file_path
     
     # определяем язык текста
@@ -328,7 +335,7 @@ class Handlers4bot:
         # новый файл титров
         new_buf = self.safe_execute(self.replace_swords(buf, swords), 'process_title replace_swords')
         size_in_bytes = new_buf.getbuffer().nbytes
-        print(f'new_buf size_in_bytes: {size_in_bytes}')
+        print(f'\nНовый файл титров содержит {size_in_bytes} байтов')
         if not new_buf:
             msg = (f'\n[Handlers4bot process_title] Не создали новый файл титров {new_buf} \n'
                   f'на языке {language}')
@@ -340,7 +347,7 @@ class Handlers4bot:
         nfile='swords_title.srt' # имя файла новых титров
         msg = await self.safe_await_execute(self.send_srt_file(message.from_user.id, new_buf, nfile), 'process_title send_srt_file')
         if msg: 
-            print(f'\n[Handlers4bot process_title] Новый файл с титрами без стоп-слов отправлен')
+            print(f'\n[Handlers4bot process_title] {msg.date} [{msg.from_user.username}] отправил [{msg.chat.username}] \nновый файл [{msg.document.file_name}] с титрами без стоп-слов')
         else: 
             msg = f'\n[Handlers4bot process_title] Новый файл с титрами без стоп-слов НЕ ОТПРАВИЛИ'
             print(msg)

@@ -1,12 +1,25 @@
-import logging
-import os
-import sys
+
+from logging import getLevelName, getLogger, Formatter, FileHandler 
+from os.path import join, dirname, exists
+from os import makedirs
+from sys import path
 
 
 class Logger:
-    def __init__(self, 
-                 log_file: str, 
-                 log_level=logging.DEBUG,
+
+    CRITICAL = 50
+    FATAL = CRITICAL
+    ERROR = 40
+    WARNING = 30
+    WARN = WARNING
+    INFO = 20
+    DEBUG = 10
+    NOTSET = 0
+
+    def __init__(self,
+                folder_logfile='logs', 
+                logfile='log.md', 
+                loglevel=10,
                  ):
         """
         Конструктор класса Logger.
@@ -16,42 +29,80 @@ class Logger:
         - log_level: Уровень логирования. По умолчанию logging.INFO.
 
         Возможные уровни логирования:
-        - logging.DEBUG: Детальная отладочная информация.
-        - logging.INFO: Информационные сообщения.
-        - logging.WARNING: Предупреждения.
-        - logging.ERROR: Ошибки, которые не приводят к прекращению работы программы.
-        - logging.CRITICAL: Критические ошибки, которые приводят к прекращению работы программы.
+        - DEBUG: Детальная отладочная информация.
+        - INFO: Информационные сообщения.
+        - WARNING: Предупреждения.
+        - ERROR: Ошибки, которые не приводят к прекращению работы программы.
+        - CRITICAL: Критические ошибки, которые приводят к прекращению работы программы.
         """
-        self.log_path = os.path.join(sys.path[0], 'log_file')
-        self.log_file = os.path.join(sys.path[0], 'log_file', log_file or 'log.md')
-        self.log_level = log_level
-        self._create_log_directory()
-        self.logger = self._setup_logger()
+        self.logfile=logfile
+        self.folder_logfile=folder_logfile
+        self.loglevel=getLevelName(loglevel)
+        self.parh_to_logfile = join(path[0], self.folder_logfile, self.logfile)
+        self.create_directory(self.parh_to_logfile)
+        self.logger = self.setup_logger(self.loglevel, self.parh_to_logfile)
 
-    def _create_log_directory(self):
+    def create_directory(self, path):
         """
-        Создает директорию для хранения файлов журнала, если она не существует.
+        Создает директорию, если она не существует.
         """
-        log_dir = os.path.dirname(self.log_file)
-        if not os.path.exists(log_dir):
-            os.makedirs(log_dir)
+        directory = dirname(path)
+        # print(f'\n[Logger create_directory] directory: {directory}')
+        if not exists(directory):
+            makedirs(directory) 
 
-    def _setup_logger(self):
+    def setup_logger(self, log_level: int or str, parh_logfile: str):
         """
         Настраивает логгер.
 
         Возвращает:
         - logger: Объект логгера.
         """
-        logger = logging.getLogger(__name__)
-        logger.setLevel(self.log_level)
-        #
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        #
-        file_handler = logging.FileHandler(self.log_file)
-        file_handler.setLevel(self.log_level)
+        
+        nameToLevel = {
+            'CRITICAL': Logger.CRITICAL,
+            'FATAL': Logger.FATAL,
+            'ERROR': Logger.ERROR,
+            'WARN': Logger.WARNING,
+            'WARNING': Logger.WARNING,
+            'INFO': Logger.INFO,
+            'DEBUG': Logger.DEBUG,
+            'NOTSET': Logger.NOTSET,
+        }
+
+        levelToName = {
+            Logger.CRITICAL: 'CRITICAL',
+            Logger.ERROR: 'ERROR',
+            Logger.WARNING: 'WARNING',
+            Logger.INFO: 'INFO',
+            Logger.DEBUG: 'DEBUG',
+            Logger.NOTSET: 'NOTSET',
+        }
+
+        if isinstance(log_level, int):
+            loglevel = log_level
+            print(f'\n[__name__ [{__name__}] Logger setup_logger] loglevel: {loglevel}')
+        elif isinstance(log_level, str):
+            if log_level not in nameToLevel:
+                print(f'\n[__name__ [{__name__}] Logger _setup_logger] ERROR log_level: {log_level} not in nameToLevel')
+                return None
+            print(f'\n[__name__ [{__name__}] Logger setup_logger] loglevel: {log_level}')
+            loglevel = nameToLevel[log_level]
+        else:
+            print(f'\n[__name__ [{__name__}] Logger _setup_logger] ERROR log_level: {log_level} is not int or str')
+            return None
+        
+        # хэндлер
+        file_handler = FileHandler(parh_logfile)
+        file_handler.setLevel(loglevel)
+        formatter = Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         file_handler.setFormatter(formatter)
-        #
+        
+        # создаем логгер
+        logger = getLogger(__name__)
+        # устанавливаем уровень логгирования
+        logger.setLevel(loglevel)
+        # добавляем хэндлер в логгер
         logger.addHandler(file_handler)
         #
         return logger
@@ -65,24 +116,4 @@ class Logger:
         """
         self.logger.info(message)
 
-    def set_log_file(self, log_file):
-        """
-        Устанавливает имя файла логирования.
-
-        Аргументы:
-        - log_file: Имя файла логирования.
-        """
-        self.log_file = os.path.join(sys.path[0], 'log', log_file)
-        self._create_log_directory()
-        self.logger.handlers[0].baseFilename = self.log_file
-
-    def set_log_level(self, log_level):
-        """
-        Устанавливает уровень логирования.
-
-        Аргументы:
-        - log_level: Уровень логирования.
-        """
-        self.log_level = log_level
-        self.logger=self._setup_logger()
 

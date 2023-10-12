@@ -1,7 +1,5 @@
 import os
 from aiogram import Bot, Dispatcher
-# from aiogram.dispatcher.dispatcher import Dispatcher
-
 from aiogram.fsm.storage.memory import MemoryStorage
 
 """

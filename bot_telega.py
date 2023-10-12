@@ -1,6 +1,12 @@
 #!/usr/bin/env python3 
 #
-import logging, asyncio, time, sys
+from asyncio import run 
+from pynvml import nvmlInit, nvmlDeviceGetCount, nvmlDeviceGetHandleByIndex, nvmlDeviceGetMemoryInfo, nvmlShutdown
+from logging import getLevelName
+from time import strftime
+from os.path import basename
+from sys import platform, argv, path
+from psutil import virtual_memory
 from typing import Coroutine
 from argparse import ArgumentParser
 from sqlalchemy.engine.result import Row
@@ -18,22 +24,23 @@ class Telega:
     def __init__(self, 
                  folder_swords='swords',
                  pattern_name_swords='swords_',
-                 log_file='telega_log.md',  
-                 log_level=logging.DEBUG,
+                 folder_logfile = 'logs',
+                 logfile='telega_log.md',  
+                 loglevel='DEBUG',
                  ):
         Telega.countInstance += 1
         self.countInstance = Telega.countInstance
         self.bot=bot
         self.dp=dp
-        self.log_file=log_file
-        self.log_level=log_level
+        self.folder_logfile = folder_logfile
+        self.logfile=logfile
+        self.loglevel=loglevel
         self.folder_swords = folder_swords
         self.pattern_name_swords = pattern_name_swords
         # Разбор аргументов
         self._arg_parser()
         # Logger
-        self.Logger = Logger(log_file=self.log_file, 
-                             log_level=self.log_level)
+        self.Logger = Logger(self.folder_logfile, self.logfile, self.loglevel)
         # Client
         self.client = Handlers4bot(logger=self.Logger, 
                                    folder_swords = self.folder_swords,
@@ -45,11 +52,12 @@ class Telega:
     def _print(self):
         print(f'\n[Telega] countInstance: [{self.countInstance}]')
         self.Logger.log_info(f'\n[Telega] countInstance: [{self.countInstance}]\n')
-        msg = (f"Started at {time.strftime('%X')}\n"
-              f'platform: [{sys.platform}]\n'
+        msg = (f"Started at {strftime('%X')}\n"
+              f'platform: [{platform}]\n'
               f'\nАргументы:\n'
-              f'log_file: {self.log_file}\n'
-              f'log_level: {self.log_level}\n'
+              f'folder_logfile: {self.folder_logfile}\n'
+              f'logfile: {self.logfile}\n'
+              f'loglevel: {self.loglevel}\n'
               f'folder_swords: {self.folder_swords}\n'
               f'pattern_name_swords: {self.pattern_name_swords}\n'
               )
@@ -61,8 +69,9 @@ class Telega:
         # Добавление аргументов
         parser.add_argument('-fs', '--folder_swords', type=str, help='Папка для файлов стоп-слов')
         parser.add_argument('-ns', '--pattern_name_swords', type=str, help='Шаблон имени файла стоп-слов')
-        parser.add_argument('-lf', '--log_file', type=str, help='Имя журнала логгирования')
-        parser.add_argument('-ll', '--log_level', type=str, help='Уровень логгирования')
+        parser.add_argument('-fl', '--folder_logfile', type=str, help='Папка для логов')
+        parser.add_argument('-lf', '--logfile', type=str, help='Имя журнала логгирования')
+        parser.add_argument('-ll', '--loglevel', type=str, help='Уровень логгирования')
 
     # Разбор аргументов строки
     def _arg_parser(self):
@@ -71,11 +80,37 @@ class Telega:
         # добавление аргументов строки
         self._arg_added(parser)
         args = parser.parse_args()
+        
+        if args.folder_logfile: 
+            self.folder_logfile=args.folder_logfile
+        
+        if args.logfile: 
+            self.logfile=args.logfile
+        
+        if args.loglevel: 
+            self.loglevel=getLevelName(args.loglevel.upper()) # (CRITICAL, ERROR, WARNING,INFO, DEBUG)
+        
+        if args.folder_swords: 
+            self.folder_swords=args.folder_swords
+        
+        if args.pattern_name_swords: 
+            self.pattern_name_swords=args.pattern_name_swords
 
-        if args.log_file: self.log_file=args.log_file
-        if args.log_level: self.log_level=int(args.log_level) # (CRITICAL, ERROR, WARNING,INFO, DEBUG)
-        if args.folder_swords: self.folder_swords=args.folder_swords
-        if args.pattern_name_swords: self.pattern_name_swords=args.pattern_name_swords
+    # логирование информации о памяти
+    def log_memory(self):
+        self.Logger.log_info(f'****************************************************************')
+        self.Logger.log_info(f'*Data RAM {basename(argv[0])}: [{virtual_memory()[2]}%]')
+        # Инициализируем NVML для сбора информации о GPU
+        nvmlInit()
+        deviceCount = nvmlDeviceGetCount()
+        self.Logger.log_info(f'\ndeviceCount [{deviceCount}]')
+        for i in range(deviceCount):
+            handle = nvmlDeviceGetHandleByIndex(i)
+            meminfo = nvmlDeviceGetMemoryInfo(handle)
+            self.Logger.log_info(f"#GPU [{i}]: used memory [{int(meminfo.used / meminfo.total * 100)}%]")
+            self.Logger.log_info(f'****************************************************************\n')
+        # Освобождаем ресурсы NVML
+        nvmlShutdown()
 #
     # обертка для безопасного выполнения методов
     # async def safe_execute(self, coroutine: Callable[..., Coroutine[Any, Any, T]]) -> T:
@@ -104,14 +139,29 @@ class Telega:
                 return None
         return message  
 
+    # выводим состояние системы
+    def system_status(self):
+        print(f'\nСтарт приложения...\n') 
+        file_start = basename(argv[0])
+        path_start = path[0]
+        msg = (
+            f'File: [{file_start}]\n'
+            f'Path: [{path_start}]\n'
+            f'Data memory:'
+                )
+        print(msg)
+        memory = virtual_memory()
+        for field in memory._fields:
+            print(f"{field}: {getattr(memory, field)}")    
+
+
 # MAIN **************************
 async def main():
-    print(f'\n**************************************************************************')
-    print(f'\nБот вышел в онлайн')
+    # Создаем экземпляр класса Start
     # создаем объект и в нем регистрируем хэндлеры Клиента
     telega=Telega()  
-    telega.Logger.log_info(f'\n[main] Создали объект {telega}')
-    print(f'\n[main] Создали объект {telega}')
+    telega.log_memory() # логирование информации о памяти
+    telega.system_status() # выводим состояние системы
     # регистрируем обработчики
     await telega.client_work()
     drop_pending_updates = await telega.bot.delete_webhook(drop_pending_updates=True)
@@ -122,7 +172,6 @@ async def main():
     #
 #
 if __name__ == "__main__":
-    asyncio.run(main())
-    # executor.start_polling(dp, skip_updates=True, on_startup=main)
+    run(main())
 
 

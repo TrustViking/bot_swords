@@ -1,12 +1,15 @@
+.com
 Addict
 Addicts
+Affect
+Affected
 Aggresive
 Aggression
-Aggression 
 Aggressive
 Aggressiveness
 Alcoholic
 Alcoholics
+Apocalypse
 Ass
 Asses
 Asshole
@@ -23,10 +26,13 @@ Cannabis
 Cardinal
 Cardinals
 Casualty
+Cataclysmic
 Catastrophe
 Catastrophes
+Censorship
 Chancery
 Chew
+Children
 Christians
 Church
 Cigar
@@ -42,20 +48,20 @@ Climate
 Climates
 Climatic
 Collapse
+Collapsed
 Concentration
-Concentration camp
 Concentrations
 Conflicts
 Coronavirus
 Cravings
-Crazy house
-Crisis
+Creativesociety.com
+Cryptocurrency
 Dad
 Daddies
 Daddy
 Dads
+Dangerous
 Dead
-Dead.
 Death
 Debauchery
 Debilism
@@ -64,9 +70,14 @@ Delusion
 Demise
 Departure
 Depravity
+Description
 Destroy
+Destroyed
+Destruction
 Die
 Died
+Disaster
+Disasters
 Divine
 Doom
 Douche
@@ -75,7 +86,6 @@ Drastically
 Drug
 Drugaddict
 Drugs
-Dump truck
 Dumptruck
 Earn
 Ecclesiastical
@@ -84,7 +94,6 @@ Eliminate
 Eliminated
 Emergencies
 Emergency
-Emergency situation
 Erotica
 Eroticism
 Escape
@@ -100,6 +109,7 @@ Fascist
 Fascists
 Father
 Fight
+Follow
 Fool
 Fools
 Fright
@@ -109,6 +119,7 @@ Fuhrer
 Genocide
 God
 Gods
+Gold
 Gun
 Guns
 Hate
@@ -139,8 +150,12 @@ Kike
 Kill
 Knife
 Knives
+Lifeless
+Links
 Liquidate
 Liquidated
+Live
+Lives
 Loch
 Lohi
 Madhouse
@@ -186,8 +201,6 @@ Popovsky
 Pops
 Popsa
 Porn
-Porn film
-Porn films
 Pornfilm
 Pornfilms
 Pornography
@@ -211,10 +224,14 @@ Rapists
 Reich
 Religion
 Religious
+Repost
+Reposted
+Reposting
 Retard
 Rich
 Roman
 Rome
+Rumble
 Russia
 Russian
 Russians
@@ -232,6 +249,7 @@ Shit
 Smoker
 Smokes
 Smoking
+Society.com
 Squeeze
 Strip
 Stripping
@@ -242,12 +260,13 @@ Subscription
 Subscriptions
 Sucker
 Suckers
-Suction cup
+Suction
 Suicidal
 Suicide
 Suicides
 Survival
 Tablets
+Telegram
 Temple
 Terror
 Terrorism
@@ -256,6 +275,7 @@ Terroristic
 Terrorists
 Thirst
 Thirsts
+Threat
 Tin
 Towing
 Ukraine
@@ -274,16 +294,20 @@ Weapon
 Weapons
 Whore
 Whores
+YouTube
+Youtube
 Zhidam
 addict
 addicts
+affect
+affected
 aggresive
 aggression
-aggression 
 aggressive
 aggressiveness
 alcoholic
 alcoholics
+apocalypse
 ass
 asses
 asshole
@@ -300,10 +324,13 @@ cannabis
 cardinal
 cardinals
 casualty
+cataclysmic
 catastrophe
 catastrophes
+censorship
 chancery
 chew
+children
 christians
 church
 cigar
@@ -319,20 +346,20 @@ climate
 climates
 climatic
 collapse
+collapsed
 concentration
-concentration camp
 concentrations
 conflicts
 coronavirus
 cravings
-crazy house
-crisis
+creativesociety.com
+cryptocurrency
 dad
 daddies
 daddy
 dads
+dangerous
 dead
-dead.
 death
 debauchery
 debilism
@@ -341,9 +368,14 @@ delusion
 demise
 departure
 depravity
+description
 destroy
+destroyed
+destruction
 die
 died
+disaster
+disasters
 divine
 doom
 douche
@@ -352,7 +384,6 @@ drastically
 drug
 drugaddict
 drugs
-dump truck
 dumptruck
 earn
 ecclesiastical
@@ -361,7 +392,6 @@ eliminate
 eliminated
 emergencies
 emergency
-emergency situation
 erotica
 eroticism
 escape
@@ -377,6 +407,7 @@ fascist
 fascists
 father
 fight
+follow
 fool
 fools
 fright
@@ -386,6 +417,7 @@ fuhrer
 genocide
 god
 gods
+gold
 gun
 guns
 hate
@@ -416,8 +448,12 @@ kike
 kill
 knife
 knives
+lifeless
+links
 liquidate
 liquidated
+live
+lives
 loch
 lohi
 madhouse
@@ -463,8 +499,6 @@ popovsky
 pops
 popsa
 porn
-porn film
-porn films
 pornfilm
 pornfilms
 pornography
@@ -488,10 +522,14 @@ rapists
 reich
 religion
 religious
+repost
+reposted
+reposting
 retard
 rich
 roman
 rome
+rumble
 russia
 russian
 russians
@@ -509,6 +547,7 @@ shit
 smoker
 smokes
 smoking
+society.com
 squeeze
 strip
 stripping
@@ -519,12 +558,13 @@ subscription
 subscriptions
 sucker
 suckers
-suction cup
+suction
 suicidal
 suicide
 suicides
 survival
 tablets
+telegram
 temple
 terror
 terrorism
@@ -533,6 +573,7 @@ terroristic
 terrorists
 thirst
 thirsts
+threat
 tin
 towing
 ukraine
@@ -551,4 +592,5 @@ weapon
 weapons
 whore
 whores
+youtube
 zhidam
