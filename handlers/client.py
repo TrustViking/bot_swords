@@ -109,8 +109,8 @@ class Handlers4bot:
             print(msg)
             return None
         
+        # Чтение файла в память
         try:
-            # Чтение файла в память
             with open(file_path, 'r', encoding=encoding) as f:
                 stop_words = f.read().splitlines()
         except Exception as eR:
@@ -131,10 +131,10 @@ class Handlers4bot:
 
         # Сортировка swords
         swords = sorted(case_sensitive_words)
-        #
+
+        # запись swords в файл на диск
         try:
-            # запись файла на диск
-            with open(file_path, 'w') as f:
+            with open(file_path, 'w', encoding=encoding) as f:
                 for word in swords:
                     f.write(f"{word}\n")
         except Exception as eR:
@@ -145,7 +145,7 @@ class Handlers4bot:
         return file_path
     
     # определяем язык текста
-    # возвращаем строку 'en', 'ru' or None
+    # возвращаем строку 'en', 'ru', 'ro' or None
     def detection_lang(self, buf: BytesIO):
         buf.seek(0)
         # определяем кодировку буффера 
