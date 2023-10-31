@@ -42,7 +42,7 @@ To configure the required environment variables, follow these steps:
     source ~/.bashrc  # For Bash
     ```
 
-   Or:
+   or:
 
     ```bash
     source ~/.zshrc  # For Zsh
@@ -83,13 +83,25 @@ Note: Some modules (`io`, `logging`, `os`, `sys`, `time`, `typing`) are Python b
 #### Default Startup
 
 ```bash
+python3 start_swords.py
+```
+
+or
+
+```bash
 python start_swords.py
 ```
 
 ### Customized Startup
 
+['-fs', '--folder_swords'] - Folder for stop-word files
+['-ns', '--pattern_name_swords'] - Pattern name for stop-word files
+['-fl', '--folder_logfile'] - Folder for log files
+['-lf', '--logfile'] - Log file name
+['-ll', '--loglevel'] - Logging level
+
 ```bash
-python start_swords.py -fs swords -ns swords_EN.txt -lf logs.md -ll info
+python start_swords.py -fs swords -ns swords_ -lf logs.md -ll info
 ```
 
 ### Windows

@@ -25,6 +25,7 @@ class Start:
         Start.countInstance += 1
         self.countInstance = Start.countInstance
         #
+        self.cls_name = self.__class__.__name__
         self.folder_logfile = folder_logfile
         self.logfile=logfile
         self.loglevel=loglevel
@@ -33,35 +34,46 @@ class Start:
         # Разбор аргументов командной строки
         self._arg_parser()
         # Logger
-        self.Logger = Logger(self.folder_logfile, self.logfile, self.loglevel)
+        self.logger = Logger(self.folder_logfile, self.logfile, self.loglevel)
         self._print()
 
         #     
     # выводим № объекта
     def _print(self):
-        print(f'\n[Start] countInstance: [{self.countInstance}]')
-        self.Logger.log_info(f'\n[Start] countInstance: [{self.countInstance}]\n')
-        msg = (f"Started at {strftime('%X')}\n"
-              f'platform: [{platform}]\n'
-              f'\nАргументы:\n'
-              f'folder_logfile: {self.folder_logfile}\n'
-              f'logfile: {self.logfile}\n'
-              f'loglevel: {self.loglevel}\n'
-              f'folder_swords: {self.folder_swords}\n'
-              f'pattern_name_swords: {self.pattern_name_swords}\n'
-              )
+        msg = (
+            f"\nStarted at {strftime('%X')}\n"
+            f'[{__name__}|{self.cls_name}] countInstance: [{self.countInstance}]\n'
+            f'platform: [{platform}]\n'
+            f'\nAttributes:\n'
+            )
+
+        attributes_to_print = [
+            'cls_name',
+            'folder_logfile',
+            'logfile',
+            'loglevel',
+            'folder_swords',
+            'pattern_name_swords',
+            'logger',
+        ]
+
+        for attr in attributes_to_print:
+            # "Attribute not found" будет выведено, если атрибут не существует
+            value = getattr(self, attr, "Attribute not found")  
+            msg += f"{attr}: {value}\n"
+
         print(msg)
-        self.Logger.log_info(msg)
+        self.logger.log_info(msg)
     # 
     # добавление аргументов командной строки
     def _arg_added(self, parser: ArgumentParser):
         # Добавление аргументов
-        parser.add_argument('-fs', '--folder_swords', type=str, help='Папка для файлов стоп-слов')
-        parser.add_argument('-ns', '--pattern_name_swords', type=str, help='Шаблон имени файла стоп-слов')
-        parser.add_argument('-fl', '--folder_logfile', type=str, help='Папка для логов')
-        parser.add_argument('-lf', '--logfile', type=str, help='Имя журнала логгирования')
-        parser.add_argument('-ll', '--loglevel', type=str, help='Уровень логгирования')
-
+        parser.add_argument('-fs', '--folder_swords', type=str, help='Folder for stop-word files')
+        parser.add_argument('-ns', '--pattern_name_swords', type=str, help='Pattern name for stop-word files')
+        parser.add_argument('-fl', '--folder_logfile', type=str, help='Folder for log files')
+        parser.add_argument('-lf', '--logfile', type=str, help='Log file name')
+        parser.add_argument('-ll', '--loglevel', type=str, help='Logging level')
+    
     # Разбор аргументов строки
     def _arg_parser(self):
         # Инициализация парсера аргументов
@@ -78,6 +90,7 @@ class Start:
         
         if args.loglevel: 
             self.loglevel=getLevelName(args.loglevel.upper()) # (CRITICAL, ERROR, WARNING,INFO, DEBUG)
+            print(f'self.loglevel: [{self.loglevel}]')
         
         if args.folder_swords: 
             self.folder_swords=args.folder_swords
@@ -87,17 +100,17 @@ class Start:
 
     # логирование информации о памяти
     def log_memory(self):
-        self.Logger.log_info(f'****************************************************************')
-        self.Logger.log_info(f'*Data RAM {basename(argv[0])}: [{virtual_memory()[2]}%]')
+        self.logger.log_info(f'****************************************************************')
+        self.logger.log_info(f'*Data RAM {basename(argv[0])}: [{virtual_memory()[2]}%]')
         # Инициализируем NVML для сбора информации о GPU
         nvmlInit()
         deviceCount = nvmlDeviceGetCount()
-        self.Logger.log_info(f'\ndeviceCount [{deviceCount}]')
+        self.logger.log_info(f'\ndeviceCount [{deviceCount}]')
         for i in range(deviceCount):
             handle = nvmlDeviceGetHandleByIndex(i)
             meminfo = nvmlDeviceGetMemoryInfo(handle)
-            self.Logger.log_info(f"#GPU [{i}]: used memory [{int(meminfo.used / meminfo.total * 100)}%]")
-            self.Logger.log_info(f'****************************************************************\n')
+            self.logger.log_info(f"#GPU [{i}]: used memory [{int(meminfo.used / meminfo.total * 100)}%]")
+            self.logger.log_info(f'****************************************************************\n')
         # Освобождаем ресурсы NVML
         nvmlShutdown()
 
@@ -111,13 +124,13 @@ class Start:
             return await coroutine
         except Exception as eR:
             print(f'\nERROR[Start {name_func}] ERROR: {eR}') 
-            self.Logger.log_info(f'\nERROR[Start {name_func}] ERROR: {eR}') 
+            self.logger.log_info(f'\nERROR[Start {name_func}] ERROR: {eR}') 
             return None
 
 
     # Асинхронная функция для запуска скрипта
     async def subprocess_script(self, script):
-        self.Logger.log_info(f'[Start subprocess_script] start script: {script}')
+        self.logger.log_info(f'[Start subprocess_script] start script: {script}')
         print(f'\n[Start subprocess_script] start script: {script}')
         # Example:
         # await asyncio.create_subprocess_shell("ls -l > output.txt")
@@ -130,7 +143,7 @@ class Start:
                 return None 
         except Exception as eR:
             print(f'\nERROR[Start making_subprocess_script] ERROR: {eR}') 
-            self.Logger.log_info(f'\nERROR[Start subprocess_script] ERROR: {eR}') 
+            self.logger.log_info(f'\nERROR[Start subprocess_script] ERROR: {eR}') 
             return None
         await process.wait()
 

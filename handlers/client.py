@@ -36,7 +36,7 @@ class Handlers4bot:
         # ℃ ∈ ☪
         self.replace_dict={'a': '@', 'e':'€', 'i':'!', 'o':'0', 's':'$', 'u':'и',
                            'а': '@', 'е':'€', 'и':'N', 'й':'N', 'о':'0', 'р':'₽', 'с':'©', 'я':'Ⓡ', 'т':'✝'}
-        self.path_swords = os.path.join(sys.path[0], folder_swords, pattern_name_swords)
+        self.path_swords = os.path.join(sys.path[0], folder_swords, self.pattern_name_swords)
         self.Logger = logger
         self._new_client()
         #

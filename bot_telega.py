@@ -30,6 +30,7 @@ class Telega:
                  ):
         Telega.countInstance += 1
         self.countInstance = Telega.countInstance
+        self.cls_name = self.__class__.__name__
         self.bot=bot
         self.dp=dp
         self.folder_logfile = folder_logfile
@@ -40,9 +41,9 @@ class Telega:
         # Разбор аргументов
         self._arg_parser()
         # Logger
-        self.Logger = Logger(self.folder_logfile, self.logfile, self.loglevel)
+        self.logger = Logger(self.folder_logfile, self.logfile, self.loglevel)
         # Client
-        self.client = Handlers4bot(logger=self.Logger, 
+        self.client = Handlers4bot(logger=self.logger, 
                                    folder_swords = self.folder_swords,
                                    pattern_name_swords = self.pattern_name_swords,
                                    )
@@ -50,19 +51,32 @@ class Telega:
     #
     # выводим № объекта
     def _print(self):
-        print(f'\n[Telega] countInstance: [{self.countInstance}]')
-        self.Logger.log_info(f'\n[Telega] countInstance: [{self.countInstance}]\n')
-        msg = (f"Started at {strftime('%X')}\n"
-              f'platform: [{platform}]\n'
-              f'\nАргументы:\n'
-              f'folder_logfile: {self.folder_logfile}\n'
-              f'logfile: {self.logfile}\n'
-              f'loglevel: {self.loglevel}\n'
-              f'folder_swords: {self.folder_swords}\n'
-              f'pattern_name_swords: {self.pattern_name_swords}\n'
-              )
+        msg = (
+            f"\nStarted at {strftime('%X')}\n"
+            f'[{__name__}|{self.cls_name}] countInstance: [{self.countInstance}]\n'
+            f'platform: [{platform}]\n'
+            f'\nAttributes:\n'
+            )
+
+        attributes_to_print = [
+            'cls_name',
+            'bot',
+            'dp',
+            'folder_logfile',
+            'logfile',
+            'loglevel',
+            'folder_swords',
+            'pattern_name_swords',
+            'logger',
+        ]
+
+        for attr in attributes_to_print:
+            # "Attribute not found" будет выведено, если атрибут не существует
+            value = getattr(self, attr, "Attribute not found")  
+            msg += f"{attr}: {value}\n"
+
         print(msg)
-        self.Logger.log_info(msg)
+        self.logger.log_info(msg)
 #
     # добавление аргументов строки
     def _arg_added(self, parser: ArgumentParser):
@@ -89,6 +103,8 @@ class Telega:
         
         if args.loglevel: 
             self.loglevel=getLevelName(args.loglevel.upper()) # (CRITICAL, ERROR, WARNING,INFO, DEBUG)
+            # если из командной строки, то надо через инт
+            # self.loglevel=int(args.loglevel) # (CRITICAL, ERROR, WARNING,INFO, DEBUG)
         
         if args.folder_swords: 
             self.folder_swords=args.folder_swords
@@ -98,17 +114,17 @@ class Telega:
 
     # логирование информации о памяти
     def log_memory(self):
-        self.Logger.log_info(f'****************************************************************')
-        self.Logger.log_info(f'*Data RAM {basename(argv[0])}: [{virtual_memory()[2]}%]')
+        self.logger.log_info(f'****************************************************************')
+        self.logger.log_info(f'*Data RAM {basename(argv[0])}: [{virtual_memory()[2]}%]')
         # Инициализируем NVML для сбора информации о GPU
         nvmlInit()
         deviceCount = nvmlDeviceGetCount()
-        self.Logger.log_info(f'\ndeviceCount [{deviceCount}]')
+        self.logger.log_info(f'\ndeviceCount [{deviceCount}]')
         for i in range(deviceCount):
             handle = nvmlDeviceGetHandleByIndex(i)
             meminfo = nvmlDeviceGetMemoryInfo(handle)
-            self.Logger.log_info(f"#GPU [{i}]: used memory [{int(meminfo.used / meminfo.total * 100)}%]")
-            self.Logger.log_info(f'****************************************************************\n')
+            self.logger.log_info(f"#GPU [{i}]: used memory [{int(meminfo.used / meminfo.total * 100)}%]")
+            self.logger.log_info(f'****************************************************************\n')
         # Освобождаем ресурсы NVML
         nvmlShutdown()
 #
@@ -122,7 +138,7 @@ class Telega:
             return await coroutine
         except Exception as eR:
             print(f'\nERROR[Telega {name_func}] ERROR: {eR}') 
-            self.Logger.log_info(f'\nERROR[Telega {name_func}] ERROR: {eR}') 
+            self.logger.log_info(f'\nERROR[Telega {name_func}] ERROR: {eR}') 
             return None
 
     ### запускаем клиент бот-телеграм
