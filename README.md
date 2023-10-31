@@ -56,7 +56,7 @@ python start_swords.py -fs swords -ns swords_EN.txt -lf logs.md -ll info
 
 ## License
 
-This project is licensed under the MIT License. (Or any license you prefer)
+This project is licensed under the MIT License.
 
 ## Support
 
