@@ -201,10 +201,10 @@ class Handlers4bot:
     # обрабатывает команду пользователя - /start
     async def command_start(self, message: Message): 
         # await Form.first_video.set()
-        msg = (f'Пришлите сюда файл с титрами на:\n'
-               f'- английском языке или русском языке. \n'
-               f'\nДругие языки пока не поддерживаются \n')
-        await self.bot.send_message(message.from_user.id, msg)  
+        msg = (f'Пришлите сюда файл с титрами на: \n'
+               f'\n*английском*\, *русском*\ или *румынском*\ языке \n'
+               f'\n_Другие языки пока не поддерживаются_\ \n')
+        await self.bot.send_message(message.from_user.id, msg, parse_mode='MarkdownV2')  
     
     # обработчик любого сообщения, кроме  - /start
     # from_user: id=618894555 is_bot=False first_name='AAAAAAAA' last_name=None 

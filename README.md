@@ -12,15 +12,17 @@ Bot Swords is a Telegram bot developed as part of the international CREATIVE SOC
 
 ## Environment Variables
 
-To set up the required environment variables, follow the steps below:
+### Setting Environment Variables on macOS or Linux
 
-1. Open your shell's profile file in a text editor. For example, for Bash:
+To configure the required environment variables, follow these steps:
+
+1. Open your shell's profile file in a text editor. For Bash, use:
 
     ```bash
     nano ~/.bashrc
     ```
 
-   Or for Zsh:
+   For Zsh, use:
 
     ```bash
     nano ~/.zshrc
@@ -34,7 +36,7 @@ To set up the required environment variables, follow the steps below:
 
 3. Save the file and close the editor.
 
-4. To apply the changes, run the following command:
+4. To apply the changes, run:
 
     ```bash
     source ~/.bashrc  # For Bash
@@ -46,35 +48,39 @@ To set up the required environment variables, follow the steps below:
     source ~/.zshrc  # For Zsh
     ```
 
-To check the value of the `TELEGRAM_TOKEN_SWORDS` variable, you can use the following command:
+To verify the value of the `TELEGRAM_TOKEN_SWORDS` variable, use:
 
 ```bash
 echo $TELEGRAM_TOKEN_SWORDS
 ```
 
+### Setting Environment Variables on Windows
+
+To set environment variables on Windows, make the following changes to the `start_swords.bat` file:
+
+Uncomment the line `@REM set TELEGRAM_TOKEN_SWORDS='XXX:YYY'` and insert your Telegram bot token. The line should look like this:
+
+```batch
+set TELEGRAM_TOKEN_SWORDS=1234567890:ABCDEFabcdef
+```
+
 ## Dependencies
 
-### macOS
+### macOS, Windows, Linux
 
-To run this project on macOS, you'll need to install the following Python libraries:
+To run this project on macOS, Windows or Linux you'll need to install the following Python libraries:
 
 ```bash
 pip install aiogram asyncio argparse langdetect psutil pynvml SQLAlchemy chardet
 ```
 
-### Windows
-
-(Instructions for installing dependencies on Windows)
-
-### Linux
-
-(Instructions for installing dependencies on Linux)
-
 Note: Some modules (`io`, `logging`, `os`, `sys`, `time`, `typing`) are Python built-ins and don't require installation.
 
 ## Usage
 
-### Default Startup
+### macOS, Linux
+
+#### Default Startup
 
 ```bash
 python start_swords.py
@@ -84,6 +90,12 @@ python start_swords.py
 
 ```bash
 python start_swords.py -fs swords -ns swords_EN.txt -lf logs.md -ll info
+```
+
+### Windows
+
+```bash
+start_swords.bat
 ```
 
 ## Examples

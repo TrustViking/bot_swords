@@ -1,27 +1,22 @@
 
+:: This command disables the display of executed commands in the command-line window.
+:: The @ symbol before the command means that the 'echo off' command itself will not be displayed.
+:: @echo off
 
-:: Эта команда отключает вывод выполненных команд в окне командной строки. 
-:: Символ @ перед командой означает, что сама команда echo off не будет выведена 
-:: на экран.
-::@echo off
-
-:: Эта команда создаёт копию текущих переменных окружения и 
-:: устанавливает новые локальные переменные для этого батника. 
-:: Изменения, сделанные в этом батнике, не будут влиять на 
-:: глобальные переменные окружения.
+:: This command creates a copy of the current environment variables and
+:: sets new local variables for this batch file.
+:: Changes made in this batch file will not affect
+:: global environment variables.
 setlocal
 
-:: Чтение переменных окружения
-@REM set TOKEN=%TOKEN%
-@REM set TELEGRAM_GROUP_SWORDS_BOT='-XXX'
-@REM set TELEGRAM_TOKEN_SWORDS='XXX:YYY' 
-@REM python start_swords.py --token %TOKEN% --arg1 value1 --arg2 value2
+:: Reading environment variables
+@REM set TELEGRAM_TOKEN_SWORDS=1234567890:ABCDEFabcdef
 
+:: Passing environment variables and command-line arguments to the Python script
+cd D:\linux\bots\bot_swords
+python start_swords.py
 
-:: Передача переменных окружения и аргументов командной строки в Python-скрипт
-cd D:\linux\bots\bot_swords 
-python start_swords.py 
-:: Пауза для просмотра вывода
+:: Pause to view the output
 pause
 
 endlocal
