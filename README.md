@@ -2,7 +2,8 @@
 
 ## Description
 
-Bot Swords is a Telegram bot developed as a part of the international project CREATIVE SOCIETY. The bot aims to replace stop words in titles with the ultimate goal of upholding the value that "Human Life is the Highest Value". The CREATIVE SOCIETY project unites people from over 180 countries on a voluntary basis to transition to a new societal format where human life is the utmost priority.
+Bot Swords is a Telegram bot developed as part of the international CREATIVE SOCIETY project. The bot is designed to replace stop words in video titles.
+The CREATIVE SOCIETY project unites people from more than 180 countries on a voluntary basis to transition from a consumerist societal format to a new, creative one where human life is the highest value.
 
 ## Key Features
 
@@ -14,7 +15,7 @@ Bot Swords is a Telegram bot developed as a part of the international project CR
 
 The project requires the following environment variables:
 
-- `TELEGRAM_TOKEN_swords`: The token of the Telegram bot, obtained from @BotFather.
+- `TELEGRAM_TOKEN_SWORDS`: The token of the Telegram bot, obtained from @BotFather.
 
 ## Dependencies
 
