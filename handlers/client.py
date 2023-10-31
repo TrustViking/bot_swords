@@ -33,7 +33,6 @@ class Handlers4bot:
         self.pattern_name_swords=pattern_name_swords
         self.bot=bot
         self.dp=dp
-        # self.token=token
         # ℃ ∈ ☪
         self.replace_dict={'a': '@', 'e':'€', 'i':'!', 'o':'0', 's':'$', 'u':'и',
                            'а': '@', 'е':'€', 'и':'N', 'й':'N', 'о':'0', 'р':'₽', 'с':'©', 'я':'Ⓡ', 'т':'✝'}
@@ -215,11 +214,6 @@ class Handlers4bot:
     async def any2start(self, message: Message):
         _msg=(f'Прислали: {message.content_type}\n'
               f'from_user.id: {message.from_user.id}\n'
-            #   f'text: {message.text}\n'
-            #   f'\nfrom_user: {message.from_user}\n'
-            #   f'\nsender_chat: {message.sender_chat}\n'
-            #   f'\nchat: {message.chat}\n'
-            #   f'\nmedia_group_id: {message.media_group_id}\n'
               )
         await self.bot.send_message(message.from_user.id, text=_msg)
         msg = (f'Наберите команду [/start] для начала')

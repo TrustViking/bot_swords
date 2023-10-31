@@ -1,17 +1,66 @@
-# bot_swords
-# Telegram-bot of the international project CREATIVE SOCIETY for replacing stop words in titles. 
-# Human Life is the Highest Value. 
-# CREATIVE SOCIETY is an international project that unites people from over 180 countries on a voluntary basis. 
-# The goal of the project is to transition, in a legal and peaceful way, within the shortest possible time, to a new creative format of society worldwide, where human life will be the highest value.
+# Bot Swords
 
-# The environment must have the following constant names:
-# TELEGRAM_TOKEN_swords - TOKEN of the Telegram bot we get from @BotFather
-#
-# adding command line arguments
-# '-fs', '--folder_swords'
-# '-ns', '--pattern_name_swords'
-# '-lf', '--log_file'
-# '-ll', '--log_level'
-#
-# Example of use:
-# Exam@Exampl:~$ start_swords.py -fs swords -ns swords_EN.txt  -lf logs.md -ll info
+## Description
+
+Bot Swords is a Telegram bot developed as a part of the international project CREATIVE SOCIETY. The bot aims to replace stop words in titles with the ultimate goal of upholding the value that "Human Life is the Highest Value". The CREATIVE SOCIETY project unites people from over 180 countries on a voluntary basis to transition to a new societal format where human life is the utmost priority.
+
+## Key Features
+
+- Stop-word replacement in titles
+- Configurable through command line arguments
+- Easily deployable
+
+## Environment Variables
+
+The project requires the following environment variables:
+
+- `TELEGRAM_TOKEN_swords`: The token of the Telegram bot, obtained from @BotFather.
+
+## Dependencies
+
+### macOS
+
+To run this project on macOS, you'll need to install the following Python libraries:
+
+```bash
+pip install aiogram asyncio argparse langdetect psutil pynvml SQLAlchemy chardet
+```
+
+### Windows
+
+(Instructions for installing dependencies on Windows)
+
+### Linux
+
+(Instructions for installing dependencies on Linux)
+
+Note: Some modules (`io`, `logging`, `os`, `sys`, `time`, `typing`) are Python built-ins and don't require installation.
+
+## Usage
+
+### Default Startup
+
+```bash
+python start_swords.py
+```
+
+### Customized Startup
+
+```bash
+python start_swords.py -fs swords -ns swords_EN.txt -lf logs.md -ll info
+```
+
+## Examples
+
+(TO-DO: Add examples demonstrating the bot's features)
+
+## License
+
+This project is licensed under the MIT License. (Or any license you prefer)
+
+## Support
+
+For more information or questions, please feel free to reach out:
+
+- **Contact Person**: Arthur
+- **Email**: [kongotoken@gmail.com](mailto:kongotoken@gmail.com)
