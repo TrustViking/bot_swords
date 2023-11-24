@@ -1,7 +1,10 @@
 
+import re
 import os, sys
-from io import BytesIO
 import chardet
+from typing import Dict
+from io import BytesIO
+import string
 from langdetect import detect
 from langdetect.lang_detect_exception import LangDetectException
 from aiogram import F
@@ -38,6 +41,7 @@ class Handlers4bot:
                            'а': '@', 'е':'€', 'и':'N', 'й':'N', 'о':'0', 'р':'₽', 'с':'©', 'я':'Ⓡ', 'т':'✝'}
         self.path_swords = os.path.join(sys.path[0], folder_swords, self.pattern_name_swords)
         self.Logger = logger
+        self.punct = ['!', '?', '"', '-', ',', '.', ':', ';']
         self._new_client()
         #
         #
@@ -219,27 +223,58 @@ class Handlers4bot:
         msg = (f'Наберите команду [/start] для начала')
         await self.bot.send_message(message.from_user.id, msg)
 
-    # замена слов из словаря
-    def replace_swords (self, buf: BytesIO, diction: dict):
-        # Создаем новый буфер для записи обработанного текста
-        new_buf = BytesIO()
-        # new_buf.seek(0)
-        # Обрабатываем исходный буфер построчно
-        buf.seek(0)
-        for line in buf.readlines():
-            # Декодируем строку из байтов в строку Unicode
-            decoded_line = line.decode('utf-8')
-            
-            # Разбиваем строку на слова и обрабатываем каждое слово
-            words = decoded_line.split()
-            new_words = [diction.get(word, word) for word in words]
-            
-            # Собираем строку обратно и кодируем ее в байты
-            new_line = ' '.join(new_words).encode('utf-8')
 
-            # Записываем обработанную строку в новый буфер
+    def replace_swords(self, buf: BytesIO, diction: Dict[str, str]) -> BytesIO:
+        new_buf = BytesIO()
+        buf.seek(0)
+
+        # Проходим по каждой строке в буфере
+        for line in buf.readlines():
+            decoded_line = line.decode('utf-8')
+            puncts=[] # список кортежей
+            new_elements = [] # список символов строки
+            for i, element in enumerate(decoded_line):
+                if element in self.punct:
+                    puncts.append((i, element))
+                else:
+                    new_elements.append(element)
+            
+            print(f'\npuncts: {puncts}')
+            print(f'new_elements: {new_elements}')
+            
+            # строка из списка без пунктуации
+            new_line = ''.join(new_elements)
+            print(f'new_line: {new_line}')
+
+            # Разбиваем по пробелам строку на список слов 
+            words = [word.strip() for word in new_line.split()] 
+            print(f'words: {words}')
+            
+            # проверяем каждое слово и заменяем на слово из словаря
+            new_words = [diction.get(word, word) for word in words]
+            print(f'new_words: {new_words}')
+            
+            # соединяем через пробел список слов в строку
+            new_string = ' '.join(new_words)
+            print(f'new_string: {new_string}')
+
+            # строку переводим в список символов
+            symbols = list(new_string)
+
+            # добавляем к символам пунктуацию
+            if puncts:
+                for i, punct in puncts:
+                    symbols.insert(i, punct)
+            
+            string_puncts = ''.join(symbols)
+            print(f'string_puncts: {string_puncts}')
+            
+            # Собираем список символов обратно в строку
+            new_line = ''.join(symbols).encode('utf-8')
             new_buf.write(new_line + b'\n')
+
         return new_buf
+
 
     # отправляем буфер-документ
     async def send_srt_file(self, chat_id: str, buffer: BytesIO, nfile: str):

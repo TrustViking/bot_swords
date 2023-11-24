@@ -1,6 +1,7 @@
 .com
 Addict
 Addicts
+Aesthetical
 Affect
 Affected
 Aggresive
@@ -55,6 +56,7 @@ Conflicts
 Coronavirus
 Cravings
 Creativesociety.com
+Cruel
 Cryptocurrency
 Dad
 Daddies
@@ -126,6 +128,8 @@ Hate
 Hatred
 Hemp
 Hitler
+Horrible
+Horror
 Humiliate
 Hunger
 Hungry
@@ -283,6 +287,7 @@ Ukrainian
 Ukrainians
 Undress
 Undressing
+Unethical
 Vaccination
 Vaccine
 Veins
@@ -299,6 +304,7 @@ Youtube
 Zhidam
 addict
 addicts
+aesthetical
 affect
 affected
 aggresive
@@ -353,6 +359,7 @@ conflicts
 coronavirus
 cravings
 creativesociety.com
+cruel
 cryptocurrency
 dad
 daddies
@@ -424,6 +431,8 @@ hate
 hatred
 hemp
 hitler
+horrible
+horror
 humiliate
 hunger
 hungry
@@ -581,6 +590,7 @@ ukrainian
 ukrainians
 undress
 undressing
+unethical
 vaccination
 vaccine
 veins
