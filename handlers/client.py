@@ -37,8 +37,8 @@ class Handlers4bot:
         self.bot=bot
         self.dp=dp
         # ℃ ∈ ☪
-        self.replace_dict={'a': '@', 'e':'€', 'i':'!', 'o':'0', 's':'$', 'u':'и',
-                           'а': '@', 'е':'€', 'и':'N', 'й':'N', 'о':'0', 'р':'₽', 'с':'©', 'я':'Ⓡ', 'т':'✝'}
+        self.replace_dict={'a': '@', 'e':'€', 'i':'!', 'o':'0', 's':'$', 'u':'и', 'w':'vv', 'r':'®', 'c':'©',
+                           'а': '@', 'е':'€', 'и':'N', 'й':'N', 'о':'0', 'р':'₽'}
         self.path_swords = os.path.join(sys.path[0], folder_swords, self.pattern_name_swords)
         self.Logger = logger
         self.punct = ['!', '?', '"', '-', ',', '.', ':', ';']

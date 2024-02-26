@@ -13,8 +13,9 @@ setlocal
 @REM set TELEGRAM_TOKEN_SWORDS=1234567890:ABCDEFabcdef
 
 :: Passing environment variables and command-line arguments to the Python script
-cd D:\linux\bots\bot_swords
+cd D:\bots\bot_swords\
 python start_swords.py
+
 
 :: Pause to view the output
 pause
